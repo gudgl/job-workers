@@ -1,33 +1,53 @@
 package main
 
 import (
+	"errors"
 	"sync"
 )
 
-type JobWorkersConf struct {
+var (
+	ErrNoWorkers    = errors.New("must be at least one worker")
+	ErrNoCollectors = errors.New("must be at least one collector")
+)
+
+type Client interface {
+	Do()
+	SendJob(job Job)
+}
+
+type client struct {
 	numberOfWorkers    int
 	numberOfCollectors int
 	jobs               chan Job
-	errors             chan JWError
+	errors             chan error
 	wgWorkers          sync.WaitGroup
 	wgCollectors       sync.WaitGroup
+	collector          Collector
 }
 
-func NewJobWorkerConf(
+func NewClient(
 	numberOfWorkers,
 	numberOfCollectors int,
-	job chan Job,
-	errors chan JWError,
-) JobWorkersConf {
-	return JobWorkersConf{
+	collector Collector,
+) (Client, error) {
+	if numberOfWorkers < 0 {
+		return nil, ErrNoWorkers
+	}
+
+	if numberOfCollectors < 0 {
+		return nil, ErrNoCollectors
+	}
+
+	return &client{
 		numberOfWorkers:    numberOfWorkers,
 		numberOfCollectors: numberOfCollectors,
-		jobs:               job,
-		errors:             errors,
-	}
+		jobs:               make(chan Job),
+		errors:             make(chan error),
+		collector:          collector,
+	}, nil
 }
 
-func (jw *JobWorkersConf) Execute() {
+func (jw *client) Do() {
 	for i := 0; i < jw.numberOfWorkers; i++ {
 		jw.wgWorkers.Add(1)
 
@@ -47,21 +67,25 @@ func (jw *JobWorkersConf) Execute() {
 	close(jw.errors)
 }
 
-func (jw *JobWorkersConf) startWorkers() {
+func (jw *client) SendJob(job Job) {
+	jw.jobs <- job
+}
+
+func (jw *client) startWorkers() {
 	defer jw.wgWorkers.Done()
 
 	for job := range jw.jobs {
-		err := job.Do()
+		err := job.Execute()
 		if err != nil {
 			jw.errors <- err
 		}
 	}
 }
 
-func (jw *JobWorkersConf) startCollectors() {
+func (jw *client) startCollectors() {
 	defer jw.wgCollectors.Done()
 
 	for err := range jw.errors {
-		err.HandleError()
+		jw.collector.HandleError(err)
 	}
 }

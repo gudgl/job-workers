@@ -1,6 +1,5 @@
 package main
 
-type JWError interface {
-	error
-	HandleError()
+type Collector interface {
+	HandleError(err error)
 }
