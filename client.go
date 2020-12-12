@@ -20,7 +20,7 @@ type client struct {
 	numberOfWorkers    int
 	numberOfCollectors int
 	jobs               chan Job
-	errors             chan Error
+	results            chan Result
 	wgWorkers          sync.WaitGroup
 	wgCollectors       sync.WaitGroup
 }
@@ -41,7 +41,7 @@ func NewClient(
 		numberOfWorkers:    numberOfWorkers,
 		numberOfCollectors: numberOfCollectors,
 		jobs:               make(chan Job),
-		errors:             make(chan Error),
+		results:            make(chan Result),
 	}, nil
 }
 
@@ -63,7 +63,7 @@ func (jw *client) Wait() {
 	close(jw.jobs)
 	jw.wgWorkers.Wait()
 
-	close(jw.errors)
+	close(jw.results)
 	jw.wgCollectors.Wait()
 }
 
@@ -79,7 +79,7 @@ func (jw *client) startWorkers() {
 	for job := range jw.jobs {
 		err := job.Execute()
 		if err != nil {
-			jw.errors <- err
+			jw.results <- err
 		}
 	}
 }
@@ -87,7 +87,7 @@ func (jw *client) startWorkers() {
 func (jw *client) startCollectors() {
 	defer jw.wgCollectors.Done()
 
-	for err := range jw.errors {
+	for err := range jw.results {
 		err.HandleError()
 	}
 }

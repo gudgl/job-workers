@@ -1,5 +1,5 @@
 package jw
 
-type Error interface {
+type Result interface {
 	HandleError()
 }
