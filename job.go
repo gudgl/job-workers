@@ -1,5 +1,5 @@
-package job_workers
+package jw
 
 type Job interface {
-	Execute() error
+	Execute() Error
 }

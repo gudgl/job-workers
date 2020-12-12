@@ -1,4 +1,4 @@
-package job_workers
+package jw
 
 import (
 	"errors"
@@ -6,29 +6,28 @@ import (
 )
 
 var (
-	ErrNoWorkers    = errors.New("must be at least one worker")
-	ErrNoCollectors = errors.New("must be at least one collector")
+	ErrNoWorkers    = errors.New("you must create at least one worker")
+	ErrNoCollectors = errors.New("you must create at least one collector")
 )
 
 type Client interface {
 	Do()
 	SendJob(job Job)
+	Wait()
 }
 
 type client struct {
 	numberOfWorkers    int
 	numberOfCollectors int
 	jobs               chan Job
-	errors             chan error
+	errors             chan Error
 	wgWorkers          sync.WaitGroup
 	wgCollectors       sync.WaitGroup
-	collector          Collector
 }
 
 func NewClient(
 	numberOfWorkers,
 	numberOfCollectors int,
-	collector Collector,
 ) (Client, error) {
 	if numberOfWorkers < 0 {
 		return nil, ErrNoWorkers
@@ -42,8 +41,7 @@ func NewClient(
 		numberOfWorkers:    numberOfWorkers,
 		numberOfCollectors: numberOfCollectors,
 		jobs:               make(chan Job),
-		errors:             make(chan error),
-		collector:          collector,
+		errors:             make(chan Error),
 	}, nil
 }
 
@@ -59,16 +57,20 @@ func (jw *client) Do() {
 
 		go jw.startCollectors()
 	}
+}
 
-	jw.wgWorkers.Wait()
+func (jw *client) Wait() {
 	close(jw.jobs)
+	jw.wgWorkers.Wait()
 
-	jw.wgCollectors.Wait()
 	close(jw.errors)
+	jw.wgCollectors.Wait()
 }
 
 func (jw *client) SendJob(job Job) {
-	jw.jobs <- job
+	if job != nil {
+		jw.jobs <- job
+	}
 }
 
 func (jw *client) startWorkers() {
@@ -86,6 +88,6 @@ func (jw *client) startCollectors() {
 	defer jw.wgCollectors.Done()
 
 	for err := range jw.errors {
-		jw.collector.HandleError(err)
+		err.HandleError()
 	}
 }

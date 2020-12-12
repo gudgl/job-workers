@@ -1,5 +1,5 @@
-package job_workers
+package jw
 
-type Collector interface {
-	HandleError(err error)
+type Error interface {
+	HandleError()
 }
