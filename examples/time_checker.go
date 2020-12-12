@@ -98,7 +98,7 @@ type e struct {
 	failedTime string
 }
 
-func (e *e) HandleResult() {
+func (e *e) HandleError() {
 	logrus.WithFields(logrus.Fields{
 		"time_string": e.failedTime,
 	}).WithError(e.err).Errorf("Failed to parse time")
