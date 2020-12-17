@@ -90,7 +90,7 @@ See the [examples](https://github.com/gudgl/job-workers/tree/main/examples) for 
 
 ## Collaboration
 
-Feel free to contribute and improve jw
+If you would like to contribute, head on to the [issues](https://github.com/gudgl/job-workers/issues/new) page for tasks that need help.
 
 ## Licence
 
