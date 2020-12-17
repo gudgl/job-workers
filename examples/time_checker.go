@@ -8,7 +8,10 @@ import (
 	"github.com/gudgl/job-workers"
 )
 
-const layout = "2006-01-02"
+const (
+	keyTimeString = "time_string"
+	layout        = "2006-01-02"
+)
 
 var (
 	timeStrings = []string{
@@ -55,13 +58,14 @@ var (
 )
 
 func main() {
-	client, err := jw.NewClient(10, 10)
+	c := &collector{}
+	client, err := jw.New(c, 2, 2)
 	if err != nil {
 		logrus.Fatal("Failed to create client.")
 		return
 	}
 
-	client.Do()
+	client.Init()
 
 	for _, ts := range timeStrings {
 		client.SendJob(&job{
@@ -76,13 +80,10 @@ type job struct {
 	timeString string
 }
 
-func (j *job) Execute() jw.Error {
+func (j *job) Execute() *jw.Result {
 	time, err := time.Parse(layout, j.timeString)
 	if err != nil {
-		return &e{
-			err,
-			j.timeString,
-		}
+		return jw.WithError(err).WithKey(keyTimeString, j.timeString)
 	}
 
 	logrus.WithFields(logrus.Fields{
@@ -93,13 +94,11 @@ func (j *job) Execute() jw.Error {
 	return nil
 }
 
-type e struct {
-	err        error
-	failedTime string
+type collector struct {
 }
 
-func (e *e) HandleError() {
+func (c *collector) HandleResult(r *jw.Result) {
 	logrus.WithFields(logrus.Fields{
-		"time_string": e.failedTime,
-	}).WithError(e.err).Errorf("Failed to parse time")
+		"time_string": r.GetValue(keyTimeString).(string),
+	}).WithError(r.GetError()).Errorf("Failed to parse time")
 }
