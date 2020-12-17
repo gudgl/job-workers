@@ -84,14 +84,19 @@ func (jw *client) Wait() {
 
 // SendJob sends a job to the jobs channel
 func (jw *client) SendJob(job Job) {
-	if job != nil {
-		jw.jobs <- job
-	}
+	jw.sendJob(job)
 }
 
 // SendJobs sends all given jobs to the job channel
 func (jw *client) SendJobs(jobs ...Job) {
 	for _, job := range jobs {
+		jw.sendJob(job)
+	}
+}
+
+// sendJob sends a job to the jobs channel
+func (jw *client) sendJob(job Job) {
+	if job != nil {
 		jw.jobs <- job
 	}
 }

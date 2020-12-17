@@ -11,7 +11,7 @@ func WithError(err error) *Result {
 	return NewResult().WithError(err)
 }
 
-func WithKeys(keys map[string]interface{}) *Result {
+func WithKeys(keys Keys) *Result {
 	return NewResult().WithKeys(keys)
 }
 
@@ -52,7 +52,7 @@ func (e *Result) WithError(err error) *Result {
 	return e
 }
 
-func (e *Result) WithKeys(keys map[string]interface{}) *Result {
+func (e *Result) WithKeys(keys Keys) *Result {
 	e.keys = keys
 	return e
 }
