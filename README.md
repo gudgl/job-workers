@@ -48,8 +48,8 @@ This is the `Result` with a list of methods:
 To create new `Result` use one of:
 - `NewResult() *Result` - create empty `Result`
 - `WithError(err error) *Result` - create `Result` with `error`
-- `WithKeys(keys Keys) *Result` - create `Result` with provided `keys`
-- `WithKey(key string, value interface{}) *Result` - create `Result` with the provided pair of `key` `value`
+- `WithKeys(keys Keys) *Result` - create `Result` with given `keys`
+- `WithKey(key string, value interface{}) *Result` - create `Result` with the given pair of `key` `value`
 
 Second you should create the client. It should be created with at least one worker, or it returns error from
 type `ErrNoWorkers`, and with at least one collector, or it returns error from type `ErrNoCollectors`
