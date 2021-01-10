@@ -1,6 +1,5 @@
 # job-workers or shorter jw
 
------
 [![Go Reference](https://pkg.go.dev/badge/github.com/gudgl/job-workers.svg)](https://pkg.go.dev/github.com/gudgl/job-workers) \
 jw is a library for asynchronous execution of tasks and handling results from them
 
