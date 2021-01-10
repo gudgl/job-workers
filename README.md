@@ -33,8 +33,8 @@ should be handled from the collectors.
 type Keys map[string]interface{}
 
 type Result struct {
-    err error
-    keys map[string]interface{}
+    Error error
+    Keys map[string]interface{}
 }
 ```
 
@@ -55,13 +55,13 @@ Second you should create the client. It should be created with at least one work
 type `ErrNoWorkers`, and with at least one collector, or it returns error from type `ErrNoCollectors`
 
 ```go
-client, r := jw.NewClient(3, 3)
+client, r := jw.NewClient(collector, 3, 3)
 ```
 
-Next run the `Do` function from the client to create the workers and the collectors
+Next run the `Go` function from the client to start the workers and the collectors
 
 ```go
-client.Do()
+client.Go()
 ```
 
 Then give/send them jobs one by one
