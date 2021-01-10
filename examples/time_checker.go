@@ -1,4 +1,4 @@
-package jw_test
+package main
 
 import (
 	"time"
@@ -57,7 +57,7 @@ var (
 	}
 )
 
-func Example() {
+func main() {
 	c := &collector{}
 	client, err := jw.New(c, 0, 0)
 	if err != nil {

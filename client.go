@@ -13,9 +13,13 @@ var (
 
 // Client orchestrates the workers and the collectors
 type Client interface {
-	Init()
+	// Go starts the workers and the collectors.
+	Go()
+	// SendJob sends a job to the jobs channel.
 	SendJob(job Job)
+	// SendJobs sends all given jobs to the job channel.
 	SendJobs(job ...Job)
+	// Wait closes the channels and waits for all workers and collectors to finish.
 	Wait()
 }
 
@@ -30,10 +34,10 @@ type client struct {
 	collector          Collector
 }
 
-// New creates new jw Client
+// New creates new jw Client.
 // If there is no Collector the ErrCollectorRequired is returned. Also if one of numberOfWorkers or numberOfCollectors is 0
-// the corresponding Client parameter is set to 1
-// NOTE: there must be a Collector
+// the corresponding Client parameter is set to 1.
+// NOTE: there must be a Collector!
 func New(
 	collector Collector,
 	numberOfWorkers,
@@ -60,8 +64,8 @@ func New(
 	}, nil
 }
 
-// Init creates the workers and the collectors
-func (jw *client) Init() {
+// Go starts the workers and the collectors.
+func (jw *client) Go() {
 	var i uint
 
 	for i = 0; i < jw.numberOfWorkers; i++ {
@@ -77,7 +81,7 @@ func (jw *client) Init() {
 	}
 }
 
-// Wait closes the channels and waits for all workers and collectors to finish
+// Wait closes the channels and waits for all workers and collectors to finish.
 func (jw *client) Wait() {
 	close(jw.jobs)
 	jw.wgWorkers.Wait()
@@ -86,26 +90,26 @@ func (jw *client) Wait() {
 	jw.wgCollectors.Wait()
 }
 
-// SendJob sends a job to the jobs channel
+// SendJob sends a job to the jobs channel.
 func (jw *client) SendJob(job Job) {
 	jw.sendJob(job)
 }
 
-// SendJobs sends all given jobs to the job channel
+// SendJobs sends all given jobs to the job channel.
 func (jw *client) SendJobs(jobs ...Job) {
 	for _, job := range jobs {
 		jw.sendJob(job)
 	}
 }
 
-// sendJob sends a job to the jobs channel
+// sendJob sends a job to the jobs channel.
 func (jw *client) sendJob(job Job) {
 	if job != nil {
 		jw.jobs <- job
 	}
 }
 
-// startWorkers assigning the worker to listen to the jobs channel
+// startWorkers assigning the worker to listen to the jobs channel.
 func (jw *client) startWorkers() {
 	defer jw.wgWorkers.Done()
 
@@ -117,7 +121,7 @@ func (jw *client) startWorkers() {
 	}
 }
 
-// startCollectors assigning the collectors to listen to the errors channel
+// startCollectors assigning the collectors to listen to the errors channel.
 func (jw *client) startCollectors() {
 	defer jw.wgCollectors.Done()
 
