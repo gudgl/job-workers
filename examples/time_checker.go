@@ -59,7 +59,7 @@ var (
 
 func main() {
 	c := &collector{}
-	client, err := jw.New(c, 2, 2)
+	client, err := jw.New(c, 0, 0)
 	if err != nil {
 		logrus.Fatal("Failed to create client.")
 		return

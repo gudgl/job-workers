@@ -2,6 +2,6 @@ package jw
 
 // Collector represents someone who handles the errors
 type Collector interface {
-	// HandleResult is used for handling the Result
+	// HandleResult represents how the Result should be handled
 	HandleResult(r *Result)
 }

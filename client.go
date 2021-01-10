@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	ErrNoWorkers     = errors.New("invalid number of worker")
-	ErrNoCollectors  = errors.New("invalid number of collector")
-	ErrNilCollectors = errors.New("collector is required")
+	ErrNoWorkers         = errors.New("invalid number of worker")
+	ErrNoCollectors      = errors.New("invalid number of collector")
+	ErrCollectorRequired = errors.New("collector is required")
 )
 
-// Client orchestrates the workers and collectors
+// Client orchestrates the workers and the collectors
 type Client interface {
 	Init()
 	SendJob(job Job)
@@ -21,8 +21,8 @@ type Client interface {
 
 // client implements Client interface
 type client struct {
-	numberOfWorkers    int
-	numberOfCollectors int
+	numberOfWorkers    uint
+	numberOfCollectors uint
 	jobs               chan Job
 	results            chan *Result
 	wgWorkers          sync.WaitGroup
@@ -30,23 +30,25 @@ type client struct {
 	collector          Collector
 }
 
-// New creates new jw client
-// NOTE: there must be a collector and at least one worker and at least oen collector
+// New creates new jw Client
+// If there is no Collector the ErrCollectorRequired is returned. Also if one of numberOfWorkers or numberOfCollectors is 0
+// the corresponding Client parameter is set to 1
+// NOTE: there must be a Collector
 func New(
 	collector Collector,
 	numberOfWorkers,
-	numberOfCollectors int,
+	numberOfCollectors uint,
 ) (Client, error) {
-	if numberOfWorkers < 0 {
-		return nil, ErrNoWorkers
+	if numberOfWorkers == 0 {
+		numberOfWorkers = 1
 	}
 
-	if numberOfCollectors < 0 {
-		return nil, ErrNoCollectors
+	if numberOfCollectors == 0 {
+		numberOfCollectors = 1
 	}
 
 	if collector == nil {
-		return nil, ErrNilCollectors
+		return nil, ErrCollectorRequired
 	}
 
 	return &client{
@@ -60,13 +62,15 @@ func New(
 
 // Init creates the workers and the collectors
 func (jw *client) Init() {
-	for i := 0; i < jw.numberOfWorkers; i++ {
+	var i uint
+
+	for i = 0; i < jw.numberOfWorkers; i++ {
 		jw.wgWorkers.Add(1)
 
 		go jw.startWorkers()
 	}
 
-	for i := 0; i < jw.numberOfCollectors; i++ {
+	for i = 0; i < jw.numberOfCollectors; i++ {
 		jw.wgCollectors.Add(1)
 
 		go jw.startCollectors()
