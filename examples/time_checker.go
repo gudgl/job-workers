@@ -65,7 +65,7 @@ func main() {
 		return
 	}
 
-	client.Init()
+	client.Go()
 
 	for _, ts := range timeStrings {
 		client.SendJob(&job{
