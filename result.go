@@ -25,14 +25,17 @@ func WithKey(key string, value interface{}) *Result {
 
 // Result represents the response from Job Execute method
 type Result struct {
-	err  error
-	keys Keys
+	// Error passed to WithError and returned in GetError
+	Error  error
+
+	// Contains all the keys set by the user
+	Keys Keys
 }
 
 // NewResult creates empty Result
 func NewResult() *Result {
 	return &Result{
-		keys: make(map[string]interface{}),
+		Keys: make(map[string]interface{}),
 	}
 }
 
@@ -42,13 +45,13 @@ func (e *Result) String() string {
 
 	sb.WriteString("jw error with keys: ")
 
-	for k, v := range e.keys {
+	for k, v := range e.Keys {
 		sb.WriteString(fmt.Sprintf("%s: %+v; ", k, v))
 	}
 
-	if e.err != nil {
+	if e.Error != nil {
 		sb.WriteString("and error: ")
-		sb.WriteString(e.err.Error())
+		sb.WriteString(e.Error.Error())
 	}
 
 	return sb.String()
@@ -56,13 +59,13 @@ func (e *Result) String() string {
 
 // WithError sets given error to Result
 func (e *Result) WithError(err error) *Result {
-	e.err = err
+	e.Error = err
 	return e
 }
 
 // WithKeys sets given Keys to Result
 func (e *Result) WithKeys(keys Keys) *Result {
-	e.keys = keys
+	e.Keys = keys
 	return e
 }
 
@@ -74,15 +77,15 @@ func (e *Result) WithKey(key string, value interface{}) *Result {
 
 // setKey sets given value for given eky
 func (e *Result) setKey(key string, value interface{}) {
-	e.keys[key] = value
+	e.Keys[key] = value
 }
 
 // GetValue returns the value for given key
 func (e Result) GetValue(key string) interface{} {
-	return e.keys[key]
+	return e.Keys[key]
 }
 
 // GetError returns the error
 func (e Result) GetError() error {
-	return e.err
+	return e.Error
 }

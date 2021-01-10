@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	ErrNoWorkers         = errors.New("invalid number of worker")
-	ErrNoCollectors      = errors.New("invalid number of collector")
+	// ErrCollectorRequired represents error returned when Client is created without Collector
 	ErrCollectorRequired = errors.New("collector is required")
 )
 
